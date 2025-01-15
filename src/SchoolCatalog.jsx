@@ -3,8 +3,10 @@ import React, { useState, useEffect } from "react";
 export default function SchoolCatalog() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    // Fetch data from the API when the component mounts
     fetch("/api/courses.json")
       .then((response) => {
         if (!response.ok) {
@@ -22,10 +24,22 @@ export default function SchoolCatalog() {
       });
   }, []);
 
+  const filteredCourses = courses.filter((course) => {
+    return (
+      course.courseNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.courseName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
   return (
     <div className="school-catalog">
       <h1>School Catalog</h1>
-      <input type="text" placeholder="Search" />
+      <input
+        type="text"
+        placeholder="Search"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
       <table>
         <thead>
           <tr>
@@ -43,7 +57,7 @@ export default function SchoolCatalog() {
               <td colSpan="6">Loading...</td>
             </tr>
           ) : (
-            courses.map((course) => (
+            filteredCourses.map((course) => (
               <tr key={course.id}>
                 <td>{course.trimester}</td>
                 <td>{course.courseNumber}</td>
