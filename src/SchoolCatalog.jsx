@@ -1,5 +1,68 @@
 import React, { useState, useEffect } from "react";
 
+// Context for enrolled courses
+const EnrolledCoursesContext = createContext();
+
+export function App() {
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const enrollCourse = (course) => {
+    setEnrolledCourses((prev) => [...prev, course]);
+  };
+
+  const dropCourse = (courseId) => {
+    setEnrolledCourses((prev) => prev.filter((course) => course.id !== courseId));
+  };
+
+  return (
+    <EnrolledCoursesContext.Provider value={{ enrolledCourses, enrollCourse, dropCourse }}>
+      <Header />
+      <SchoolCatalog />
+      <ClassSchedule />
+    </EnrolledCoursesContext.Provider>
+  );
+}
+
+function Header() {
+  const { enrolledCourses } = useContext(EnrolledCoursesContext);
+  return <h1>School Catalog - Enrolled Courses: {enrolledCourses.length}</h1>;
+}
+
+function ClassSchedule() {
+  const { enrolledCourses, dropCourse } = useContext(EnrolledCoursesContext);
+
+  return (
+    <div className="class-schedule">
+      <h2>Class Schedule</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Trimester</th>
+            <th>Course Number</th>
+            <th>Course Name</th>
+            <th>Semester Credits</th>
+            <th>Total Clock Hours</th>
+            <th>Drop</th>
+          </tr>
+        </thead>
+        <tbody>
+          {enrolledCourses.map((course) => (
+            <tr key={course.id}>
+              <td>{course.trimester}</td>
+              <td>{course.courseNumber}</td>
+              <td>{course.courseName}</td>
+              <td>{course.semesterCredits}</td>
+              <td>{course.totalClockHours}</td>
+              <td>
+                <button onClick={() => dropCourse(course.id)}>Drop</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function SchoolCatalog() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -8,6 +71,8 @@ export default function SchoolCatalog() {
   const [currentPage, setCurrentPage] = useState(1); 
 
   const rowsPerPage = 5;
+
+  const { enrollCourse } = useContext(EnrolledCoursesContext);
 
   useEffect(() => {
     // Fetch data from the API when the component mounts
@@ -106,7 +171,7 @@ export default function SchoolCatalog() {
             <td>{course.semesterCredits}</td>
             <td>{course.totalClockHours}</td>
             <td>
-              <button>Enroll</button>
+              <button onClick={() => enrollCourse(course)}>Enroll</button>
             </td>
           </tr>
         ))}
