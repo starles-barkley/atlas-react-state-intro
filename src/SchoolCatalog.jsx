@@ -5,6 +5,9 @@ export default function SchoolCatalog() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "ascending" });
+  const [currentPage, setCurrentPage] = useState(1); 
+
+  const rowsPerPage = 5;
 
   useEffect(() => {
     // Fetch data from the API when the component mounts
@@ -52,6 +55,24 @@ export default function SchoolCatalog() {
     );
   });
 
+  const totalPages = Math.ceil(filteredCourses.length / rowsPerPage);
+  const currentData = filteredCourses.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prevPage) => prevPage - 1);
+    }
+  };
+
   return (
     <div className="school-catalog">
       <h1>School Catalog</h1>
@@ -73,30 +94,36 @@ export default function SchoolCatalog() {
           </tr>
         </thead>
         <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan="6">Loading...</td>
-            </tr>
-          ) : (
-            filteredCourses.map((course) => (
-              <tr key={course.id}>
-                <td>{course.trimester}</td>
-                <td>{course.courseNumber}</td>
-                <td>{course.courseName}</td>
-                <td>{course.semesterCredits}</td>
-                <td>{course.totalClockHours}</td>
-                <td>
-                  <button>Enroll</button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
+        {loading ? (
+          <tr>
+            <td colSpan="6">Loading...</td>
+          </tr>
+        ) : currentData.map((course) => (
+          <tr key={course.id}>
+            <td>{course.trimester}</td>
+            <td>{course.courseNumber}</td>
+            <td>{course.courseName}</td>
+            <td>{course.semesterCredits}</td>
+            <td>{course.totalClockHours}</td>
+            <td>
+              <button>Enroll</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
       </table>
       <div className="pagination">
-        <button>Previous</button>
-        <button>Next</button>
+        <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+          Next
+        </button>
       </div>
     </div>
   );
 }
+
